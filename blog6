@@ -1,0 +1,12 @@
+#!/usr/bin/env perl6
+use v6;
+use Bailador;
+use Bailador::Template::Mojo;
+
+Bailador::App.current.renderer = 
+
+get '/' => sub {
+
+};
+
+baile;
