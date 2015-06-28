@@ -3,10 +3,12 @@ use v6;
 use Bailador;
 use Bailador::Template::Mojo;
 
-Bailador::App.current.renderer = 
+my $app = Bailador::App.current;
+$app.renderer = Bailador::Template::Mojo.new;
+$app.location = './';
 
 get '/' => sub {
-
+  template 'simple.tm', 'World';
 };
 
 baile;
