@@ -2,13 +2,43 @@
 use v6;
 use Bailador;
 use Bailador::Template::Mojo;
+Bailador::import;
 
 my $app = Bailador::App.current;
 $app.renderer = Bailador::Template::Mojo.new;
-$app.location = './';
+
+my @articles = dir('articles', :test(/^<-[.]>/)).map(*.basename);
+
+#= grep out empty lines, then make a pair of the results
+sub parse-meta($str) {
+  $str.lines.grep({$_ !~~ /^\s*$/}).map({
+    [=>] .split(':', 2).map(*.trim)
+  });
+}
+
+sub read-article($name) {
+  my $file = slurp "articles/$name";
+  # split with weird regexp until I remember uniline's ^$
+  my ($meta, $content) = $file.split: /(^|\n) '-'+ ($|\n)/;
+  my %meta = parse-meta($meta);
+  say %meta.perl;
+
+  %(%meta, :$content)
+}
 
 get '/' => sub {
-  template 'simple.tm', 'World';
+  template 'home.tm', {
+    articles => @articles,
+  };
 };
+
+get '/article/:name' => sub (Str() $name) {
+  die unless any(@articles) eq $name;
+  my $article = read-article $name;
+  template 'article.tm', {
+    title => $article<title> // $name,
+    content => $article<content>,
+  };
+}
 
 baile;
